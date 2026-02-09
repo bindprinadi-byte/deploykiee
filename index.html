@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KieeModss Deploy</title>
+
+<style>
+*{box-sizing:border-box;font-family:Arial}
+body{
+margin:0;
+background:linear-gradient(#021b2d,#063d5f);
+height:100vh;
+overflow:hidden;
+color:white;
+display:flex;
+justify-content:center;
+align-items:center;
+}
+
+.wave{
+position:absolute;bottom:0;width:200%;height:200px;
+background:rgba(0,150,255,.15);border-radius:100%;
+animation:wave 14s linear infinite;
+}
+.wave2{animation-delay:-7s;opacity:.4}
+@keyframes wave{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+.card{
+width:420px;max-width:95%;padding:25px;
+background:rgba(0,40,80,.9);
+border-radius:25px;
+border:2px solid rgba(0,200,255,.4);
+box-shadow:0 0 40px rgba(0,200,255,.7);
+z-index:2;
+}
+
+video{
+width:100%;height:220px;
+object-fit:cover;border-radius:16px;
+}
+
+.soundBtn{
+position:absolute;top:10px;right:10px;
+background:rgba(0,0,0,.5);
+width:40px;height:40px;border-radius:50%;
+display:flex;align-items:center;justify-content:center;
+cursor:pointer;
+}
+
+.field{
+width:100%;padding:14px;margin-top:12px;
+background:rgba(0,0,0,.3);
+border:1px solid rgba(0,200,255,.3);
+border-radius:14px;color:#8fdfff;
+}
+
+button{
+margin-top:14px;width:100%;padding:15px;
+border:none;border-radius:14px;
+background:#1fbfff;font-weight:bold;cursor:pointer;
+}
+
+.info{
+font-size:12px;
+opacity:.9;
+line-height:1.7;
+margin-top:10px;
+}
+
+.detail{
+display:none;margin-top:15px;
+background:rgba(0,0,0,.35);
+border:1px solid rgba(0,200,255,.3);
+border-radius:16px;padding:12px;
+}
+
+.credit{
+text-align:center;font-size:11px;
+color:#6fdfff;opacity:.7;margin-top:8px
+}
+
+.loading{opacity:.6;pointer-events:none}
+
+.spinner{
+width:18px;height:18px;
+border:3px solid rgba(255,255,255,.3);
+border-top:3px solid #fff;
+border-radius:50%;
+display:inline-block;
+animation:spin 1s linear infinite;
+margin-right:6px;
+}
+
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+<div style="position:relative">
+<video id="vid" autoplay muted loop playsinline>
+<source src="https://files.catbox.moe/r5dn00.mp4">
+</video>
+<div class="soundBtn" id="sound">🔇</div>
+</div>
+
+<h2>⚓ KieeModss</h2>
+
+<p style="font-size:13px;opacity:.8">
+Deploy website statis dengan tema laut
+</p>
+
+<input id="name" class="field" placeholder="Nama subdomain">
+
+<div class="field" id="fileBox">📁 Pilih file HTML</div>
+<input type="file" id="file" accept=".html" hidden>
+
+<!-- 3 DESKRIPSI -->
+<div class="info">
+🚀 Dukung file HTML tunggal atau ZIP website<br>
+🔐 Deploy langsung ke Vercel<br>
+⚡ File ZIP harus ada index.html di root
+</div>
+
+<button id="deployBtn">🚢 DEPLOY SEKARANG</button>
+
+<div class="detail" id="detail">
+Website: <span id="dUrl"></span><br>
+File: <span id="dFile"></span><br>
+Waktu: <span id="dTime"></span>
+</div>
+
+<div class="credit">Deploy By © Kieenewera</div>
+
+</div>
+
+<div class="wave"></div>
+<div class="wave wave2"></div>
+
+<script>
+const vid=document.getElementById("vid");
+const sound=document.getElementById("sound");
+const file=document.getElementById("file");
+const fileBox=document.getElementById("fileBox");
+const deployBtn=document.getElementById("deployBtn");
+const detail=document.getElementById("detail");
+const dUrl=document.getElementById("dUrl");
+const dFile=document.getElementById("dFile");
+const dTime=document.getElementById("dTime");
+
+sound.onclick=()=>{
+vid.muted=!vid.muted;
+sound.innerHTML=vid.muted?"🔇":"🔊";
+vid.play();
+}
+
+fileBox.onclick=()=>file.click();
+file.onchange=()=>fileBox.innerHTML="📄 "+file.files[0].name;
+
+deployBtn.onclick=async()=>{
+const name=document.getElementById("name").value.trim();
+const f=file.files[0];
+if(!name||!f) return alert("Isi nama & pilih HTML");
+
+deployBtn.classList.add("loading");
+deployBtn.innerHTML='<span class="spinner"></span> Deploying...';
+
+const html=await f.text();
+
+try{
+const r=await fetch("/api/deploy",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({name,html})
+});
+
+const j=await r.json();
+
+detail.style.display="block";
+dUrl.innerHTML=`<a href="${j.url}" target="_blank" style="color:#0ff">${j.url}</a>`;
+dFile.innerText=f.name;
+dTime.innerText=new Date().toLocaleString();
+
+}catch{
+alert("Deploy gagal");
+}
+
+deployBtn.classList.remove("loading");
+deployBtn.innerHTML="🚢 DEPLOY SEKARANG";
+}
+</script>
+
+</body>
+</html>
